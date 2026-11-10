@@ -1,0 +1,10 @@
+{
+	"name": "adf-ucb-transporte-2026-984215",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "eastus"
+}
