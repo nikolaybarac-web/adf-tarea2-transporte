@@ -5,6 +5,9 @@
 			"referenceName": "sa_transporte",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "Bronze/csv"
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
