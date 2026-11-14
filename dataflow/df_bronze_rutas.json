@@ -1,6 +1,9 @@
 {
 	"name": "df_bronze_rutas",
 	"properties": {
+		"folder": {
+			"name": "Bronze"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
