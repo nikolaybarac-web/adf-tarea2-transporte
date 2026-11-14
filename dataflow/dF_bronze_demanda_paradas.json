@@ -3,11 +3,189 @@
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
-			"sinks": [],
-			"transformations": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Bronze_demanda_paradas_csv",
+						"type": "DatasetReference"
+					},
+					"name": "csv"
+				},
+				{
+					"dataset": {
+						"referenceName": "Bronze_Demanda_Paradas_Azure",
+						"type": "DatasetReference"
+					},
+					"name": "sql"
+				},
+				{
+					"dataset": {
+						"referenceName": "Bronze_Demanda_Paradas_2022_xls",
+						"type": "DatasetReference"
+					},
+					"name": "xls2022"
+				},
+				{
+					"dataset": {
+						"referenceName": "Bronze_Demanda_paradas_2023_xls",
+						"type": "DatasetReference"
+					},
+					"name": "xsl2023"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "dw_bronze_demanda_paradas_sql",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select4"
+				},
+				{
+					"name": "union1"
+				},
+				{
+					"name": "select5"
+				},
+				{
+					"name": "select6"
+				},
+				{
+					"name": "union2"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          fec_servicio as string,",
+				"          cod_ruta as string,",
+				"          nro_parada as string,",
+				"          franja as string,",
+				"          abordajes_manuales as string,",
+				"          descensos_manuales as string,",
+				"          demanda_no_atendida as string,",
+				"          medicion as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> csv",
+				"source(output(",
+				"          AnioFuente as integer,",
+				"          DemandaId as string,",
+				"          FechaServicio as string,",
+				"          RutaHistoricaId as string,",
+				"          ParadaHistoricaId as string,",
+				"          Franja as string,",
+				"          ValidacionesTarjeta as string,",
+				"          Descensos as string,",
+				"          DemandaNoAtendida as string,",
+				"          Metodo as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> sql",
+				"source(output(",
+				"          fecha_servicio as string,",
+				"          cod_ruta as string,",
+				"          nro_parada as string,",
+				"          franja as string,",
+				"          estimacion_abordajes as string,",
+				"          estimacion_descensos as string,",
+				"          demanda_no_atendida as string,",
+				"          metodo as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> xls2022",
+				"source(output(",
+				"          fecha_servicio as string,",
+				"          cod_ruta as string,",
+				"          nro_parada as string,",
+				"          franja as string,",
+				"          estimacion_abordajes as string,",
+				"          estimacion_descensos as string,",
+				"          demanda_no_atendida as string,",
+				"          metodo as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> xsl2023",
+				"csv select(mapColumn(",
+				"          FechaServicio = fec_servicio,",
+				"          DemandaId = cod_ruta,",
+				"          ParadaHistoricaId = nro_parada,",
+				"          Franja = franja,",
+				"          ValidacionesTarjeta = abordajes_manuales,",
+				"          Descensos = descensos_manuales,",
+				"          DemandaNoAtendida = demanda_no_atendida,",
+				"          Medicion = medicion",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select4",
+				"select4, sql union(byName: true)~> union1",
+				"xls2022 select(mapColumn(",
+				"          FechaServicio = fecha_servicio,",
+				"          DemandaId = cod_ruta,",
+				"          ParadaHistoricaId = nro_parada,",
+				"          Franja = franja,",
+				"          ValidacionesTarjeta = estimacion_abordajes,",
+				"          Descensos = estimacion_descensos,",
+				"          DemandaNoAtendida = demanda_no_atendida,",
+				"          Metodo = metodo",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select5",
+				"xsl2023 select(mapColumn(",
+				"          FechaServicio = fecha_servicio,",
+				"          DemandaId = cod_ruta,",
+				"          ParadaHistoricaId = nro_parada,",
+				"          Franja = franja,",
+				"          ValidacionesTarjeta = estimacion_abordajes,",
+				"          Descensos = estimacion_descensos,",
+				"          DemandaNoAtendida = demanda_no_atendida,",
+				"          Metodo = metodo",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select6",
+				"union1, select5, select6 union(byName: true)~> union2",
+				"union2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          AnioFuente as string,",
+				"          DemandaId as string,",
+				"          FechaServicio as string,",
+				"          RutaHistoricaId as string,",
+				"          ParadaHistoricaId as string,",
+				"          Franja as string,",
+				"          ValidacionesTarjeta as string,",
+				"          Descensos as string,",
+				"          DemandaNoAtendida as string,",
+				"          Metodo as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          DemandaId,",
+				"          FechaServicio,",
+				"          RutaHistoricaId,",
+				"          ParadaHistoricaId,",
+				"          Franja,",
+				"          ValidacionesTarjeta,",
+				"          Descensos,",
+				"          DemandaNoAtendida,",
+				"          Metodo",
+				"     )) ~> sink1"
 			]
 		}
 	}
